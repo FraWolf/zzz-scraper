@@ -1,0 +1,22 @@
+{
+  "name": "zzz-scraper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node dist/index",
+    "build": "tsc",
+    "dev": "ts-node src/index"
+  },
+  "keywords": [],
+  "author": "FraWolf <me@frawolf.dev>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.13.17",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.2"
+  },
+  "dependencies": {
+    "isomorphic-unfetch": "^4.0.2"
+  }
+}
