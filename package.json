@@ -10,7 +10,7 @@
   },
   "keywords": [],
   "author": "FraWolf <me@frawolf.dev>",
-  "license": "MIT",
+  "license": "BSD-3-Clause",
   "devDependencies": {
     "@types/node": "^22.13.17",
     "ts-node": "^10.9.2",
