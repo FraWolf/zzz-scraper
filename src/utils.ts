@@ -1,4 +1,5 @@
 import unfetch from "isomorphic-unfetch";
+import { RequestWrapper } from "./types";
 
 export const defaultHeaders = {
   Origin: "https://wiki.hoyolab.com",
@@ -32,4 +33,20 @@ export async function request<T = unknown>(
     console.log("Error during request:", err?.message || err);
     return null;
   }
+}
+
+export function getSubMenuData(menuId: string, pageNumber: number = 1) {
+  return request<RequestWrapper<any[]>>(
+    "https://sg-wiki-api.hoyolab.com/hoyowiki/zzz/wapi/get_entry_page_list",
+    {
+      method: "POST",
+      headers: defaultHeaders,
+      body: JSON.stringify({
+        menu_id: menuId,
+        page_num: pageNumber,
+        page_size: 50,
+      }),
+      json: true,
+    }
+  );
 }

@@ -1,5 +1,5 @@
-import { mkdirSync, readdirSync, writeFileSync } from "fs";
-import { defaultHeaders, request } from "./utils";
+import { mkdirSync, writeFileSync } from "fs";
+import { defaultHeaders, getSubMenuData, request } from "./utils";
 
 const defaultDir = "./data";
 
@@ -37,27 +37,29 @@ async function main() {
         ?.replace(/\s+/g, "_");
 
       // Get all entries on the sub menu page
-      const subMenuRequest = await request<any>(
-        "https://sg-wiki-api.hoyolab.com/hoyowiki/zzz/wapi/get_entry_page_list",
-        {
-          method: "POST",
-          headers: defaultHeaders,
-          body: JSON.stringify({
-            menu_id: subMenu?.id,
-            page_num: 1,
-            page_size: 50,
-          }),
-          json: true,
-        }
-      );
+      var subMenuPage: number = 1;
+      var total: number = -1;
+      const subMenuDatas: any[] = [];
 
-      if (!subMenuRequest) {
-        console.error(`Unable to get sub menu ${subMenu?.name} data`);
-        continue;
-      }
+      do {
+        const subMenuRequest = await getSubMenuData(subMenu?.id, subMenuPage);
+
+        if (!subMenuRequest) {
+          console.error(`Unable to get sub menu ${subMenu?.name} data`);
+          continue;
+        }
+
+        // Set total
+        if (total === -1) {
+          total = parseInt(subMenuRequest.data.total);
+        }
+
+        subMenuDatas.push(...subMenuRequest.data.list);
+        subMenuPage++;
+      } while (subMenuDatas.length !== total && total >= 0);
 
       // Get single page from all the entries
-      const allEntriesRequests = subMenuRequest?.data?.list.map((item: any) => {
+      const allEntriesRequests = subMenuDatas.map((item: any) => {
         return request<any>(
           `https://sg-wiki-api-static.hoyolab.com/hoyowiki/zzz/wapi/entry_page?entry_page_id=${item?.entry_page_id}`,
           {
@@ -69,7 +71,7 @@ async function main() {
 
       writeFileSync(
         `${menuDirPath}/${formattedSubMenuName}.json`,
-        JSON.stringify(subMenuRequest?.data?.list),
+        JSON.stringify(subMenuDatas),
         "utf8"
       );
 
