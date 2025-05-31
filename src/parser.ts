@@ -1,4 +1,10 @@
-import { readdirSync, readFileSync, writeFileSync } from "fs";
+import {
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+} from "fs";
 
 async function main() {
   // const bangbooDatabase = readFileSync(
@@ -9,14 +15,19 @@ async function main() {
   //   return console.error("Database file not found");
   // }
 
-  // const folderTree = "bangboo_database";
-  const folderTree = "storage_items";
+  const folderTree = "bangboo_database";
+  // const folderTree = "storage_items";
 
   const folderEntries = readdirSync(`data/${folderTree}/entries`).map(
     (file) => {
       return readFileSync(`data/${folderTree}/entries/${file}`, "utf8");
     }
   );
+
+  const parsedFolder = existsSync(`data/${folderTree}/parsed`);
+  if (!parsedFolder) {
+    mkdirSync(`data/${folderTree}/parsed`);
+  }
 
   const allowedComponents: string[] = [
     "baseInfo",
@@ -197,11 +208,24 @@ async function main() {
       });
     });
 
+    const extraValues = Object.values(parsedFile?.filter_values)
+      ?.filter((item: any) => {
+        return !!item?.key && item?.values?.length > 0;
+      })
+      ?.map((values: any, index) => {
+        const id = values?.key?.key;
+        const key = formatToId(values?.key?.text)?.toLowerCase();
+        const keyValues = values.values;
+
+        return [key, keyValues];
+      });
+
     const dump: any = {
       id: parseInt(parsedFile.id),
       name: cleanFromHTML(parsedFile.name),
       description: cleanFromHTML(parsedFile.desc),
       iconUrl: parsedFile.icon_url,
+      ...Object.fromEntries(extraValues),
       ...Object.fromEntries(attributesComponent),
     };
 
@@ -214,7 +238,7 @@ async function main() {
       JSON.stringify(dump),
       "utf8"
     );
-    // break;
+    break;
   }
 
   // console.log(bangbooDatabase);
