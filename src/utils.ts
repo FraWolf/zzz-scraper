@@ -72,3 +72,13 @@ export function replaceDollarSign(data: string) {
   newData = newData.substring(0, newData.length - 1);
   return newData;
 }
+
+export function isStringifiedObject(data: string) {
+  try {
+    data = replaceDollarSign(data);
+
+    return !!JSON.parse(data);
+  } catch (e) {
+    return false;
+  }
+}

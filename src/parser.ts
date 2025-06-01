@@ -10,10 +10,13 @@ import {
   cleanFromHTML,
   replaceDollarSign,
   wikiAppName,
+  isStringifiedObject,
 } from "./utils";
 
 async function main() {
-  const folderTree = "bangboo_database";
+  const mergedResults: any[] = [];
+
+  const folderTree = "character_database";
   // const folderTree = "storage_items";
 
   const folderEntries = readdirSync(
@@ -68,7 +71,7 @@ async function main() {
             };
 
             // Replace value with agent's object
-            if (id === "same_faction") {
+            if (isStringifiedObject(item?.value?.[0])) {
               itemObject.value = item.value.flatMap((agentContainer: any) => {
                 agentContainer = replaceDollarSign(agentContainer);
 
@@ -222,10 +225,11 @@ async function main() {
       });
 
     const dump: any = {
-      id: parseInt(parsedFile.id),
+      id: parseInt(parsedFile.id)?.toString(),
       name: cleanFromHTML(parsedFile.name),
       description: cleanFromHTML(parsedFile.desc),
       iconUrl: parsedFile.icon_url,
+      headerUrl: parsedFile?.header_img_url || null,
       ...Object.fromEntries(extraValues),
       ...Object.fromEntries(attributesComponent),
     };
@@ -233,6 +237,8 @@ async function main() {
     const originalFileName = readdirSync(
       `data/${wikiAppName}/${folderTree}/entries`
     )[fileIndex];
+
+    mergedResults.push(dump);
 
     writeFileSync(
       `data/${wikiAppName}/${folderTree}/parsed/${originalFileName}`,
@@ -242,7 +248,11 @@ async function main() {
     // break;
   }
 
-  // console.log(bangbooDatabase);
+  writeFileSync(
+    `data/${wikiAppName}/${folderTree}/${folderTree}_merged.json`,
+    JSON.stringify(mergedResults),
+    "utf8"
+  );
 }
 
 main();
