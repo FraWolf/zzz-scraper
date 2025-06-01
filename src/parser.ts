@@ -5,28 +5,29 @@ import {
   readFileSync,
   writeFileSync,
 } from "fs";
+import {
+  formatToId,
+  cleanFromHTML,
+  replaceDollarSign,
+  wikiAppName,
+} from "./utils";
 
 async function main() {
-  // const bangbooDatabase = readFileSync(
-  //   "data/bangboo_database/bangboo.json",
-  //   "utf8"
-  // );
-  // if (!bangbooDatabase) {
-  //   return console.error("Database file not found");
-  // }
-
   const folderTree = "bangboo_database";
   // const folderTree = "storage_items";
 
-  const folderEntries = readdirSync(`data/${folderTree}/entries`).map(
-    (file) => {
-      return readFileSync(`data/${folderTree}/entries/${file}`, "utf8");
-    }
-  );
+  const folderEntries = readdirSync(
+    `data/${wikiAppName}/${folderTree}/entries`
+  ).map((file) => {
+    return readFileSync(
+      `data/${wikiAppName}/${folderTree}/entries/${file}`,
+      "utf8"
+    );
+  });
 
-  const parsedFolder = existsSync(`data/${folderTree}/parsed`);
+  const parsedFolder = existsSync(`data/${wikiAppName}/${folderTree}/parsed`);
   if (!parsedFolder) {
-    mkdirSync(`data/${folderTree}/parsed`);
+    mkdirSync(`data/${wikiAppName}/${folderTree}/parsed`, { recursive: true });
   }
 
   const allowedComponents: string[] = [
@@ -215,7 +216,7 @@ async function main() {
       ?.map((values: any, index) => {
         const id = values?.key?.key;
         const key = formatToId(values?.key?.text)?.toLowerCase();
-        const keyValues = values.values;
+        const keyValues = values.values?.[0] || values?.values;
 
         return [key, keyValues];
       });
@@ -229,16 +230,16 @@ async function main() {
       ...Object.fromEntries(attributesComponent),
     };
 
-    const originalFileName = readdirSync(`data/${folderTree}/entries`)[
-      fileIndex
-    ];
+    const originalFileName = readdirSync(
+      `data/${wikiAppName}/${folderTree}/entries`
+    )[fileIndex];
 
     writeFileSync(
-      `data/${folderTree}/parsed/${originalFileName}`,
+      `data/${wikiAppName}/${folderTree}/parsed/${originalFileName}`,
       JSON.stringify(dump),
       "utf8"
     );
-    break;
+    // break;
   }
 
   // console.log(bangbooDatabase);
@@ -298,25 +299,6 @@ interface Bangboo {
       materials: ComponentItem[];
     }
   >;
-}
-
-function regexReplace(regexRule: RegExp, data: string, replacer: string) {
-  return data.replace(regexRule, replacer);
-}
-
-export function formatToId(data: string) {
-  return regexReplace(/\ /g, data, "_");
-}
-
-export function cleanFromHTML(data: string) {
-  return regexReplace(/<[^>]*>/g, data, "");
-}
-
-export function replaceDollarSign(data: string) {
-  var newData = data;
-  newData = newData.substring(1);
-  newData = newData.substring(0, newData.length - 1);
-  return newData;
 }
 
 // https://sg-public-api-static.hoyoverse.com/content_v2_user/app/3e9196a4b9274bd7/getContentList?iPageSize=100&iPage=1&iChanId=288&sLangKey=en-us
