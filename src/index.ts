@@ -1,12 +1,18 @@
 import { mkdirSync, writeFileSync } from "fs";
-import { defaultHeaders, getSubMenuData, request } from "./utils";
+import {
+  defaultHeaders,
+  formatToId,
+  getSubMenuData,
+  request,
+  wikiAppName,
+} from "./utils";
 
 const defaultDir = "./data";
 
 async function main() {
   // Get all menu entries
   const menuRequest = await request<any>(
-    "https://sg-wiki-api-static.hoyolab.com/hoyowiki/zzz/wapi/get_menus",
+    `https://sg-wiki-api-static.hoyolab.com/hoyowiki/${wikiAppName}/wapi/get_menus`,
     {
       headers: defaultHeaders,
       json: true,
@@ -24,17 +30,15 @@ async function main() {
       continue;
     }
 
-    const formattedMenuName = entry.name?.toLowerCase()?.replace(/\s+/g, "_");
-    const menuDirPath = `${defaultDir}/${formattedMenuName}`;
+    const formattedMenuName = formatToId(entry.name)?.toLowerCase();
+    const menuDirPath = `${defaultDir}/${wikiAppName}/${formattedMenuName}`;
 
     // Create folder if it doesn't exists
     mkdirSync(menuDirPath, { recursive: true });
 
     // Goes through sub menus
     for (let subMenu of entry.sub_menus) {
-      const formattedSubMenuName = subMenu?.name
-        ?.toLowerCase()
-        ?.replace(/\s+/g, "_");
+      const formattedSubMenuName = formatToId(subMenu?.name)?.toLowerCase();
 
       // Get all entries on the sub menu page
       var subMenuPage: number = 1;
@@ -91,7 +95,11 @@ async function main() {
     }
   }
 
-  writeFileSync("./data/menu.json", JSON.stringify(menuRequest), "utf8");
+  writeFileSync(
+    `${defaultDir}/${wikiAppName}/menu.json`,
+    JSON.stringify(menuRequest),
+    "utf8"
+  );
 }
 
 main();

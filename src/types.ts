@@ -4,3 +4,5 @@ export interface RequestWrapper<T = unknown> {
     total: string;
   };
 }
+
+export type WikiAppName = "zzz" | "hsr";
