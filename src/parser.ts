@@ -16,7 +16,7 @@ import {
 async function main() {
   const mergedResults: any[] = [];
 
-  const folderTree = "character_database";
+  const folderTree = "equipment_database";
   // const folderTree = "storage_items";
 
   const folderEntries = readdirSync(
@@ -38,6 +38,13 @@ async function main() {
     "ascension",
     "talent",
     "textual_research",
+
+    // Drives
+    "reliquary_set_effect",
+    "drivedisc",
+
+    // W-Engines
+    "equipment_skill",
   ];
 
   for (let fileIndex in folderEntries) {
@@ -45,7 +52,8 @@ async function main() {
     const parsedFile = JSON.parse(dataFile);
     console.log(`[${parsedFile?.id}] ${parsedFile?.name}`);
 
-    const attributesComponent = parsedFile?.modules?.map((module: Module) => {
+    const attributesComponent: any[] = [];
+    parsedFile?.modules?.forEach((module: Module) => {
       // return module?.name === "Attributes";
 
       return module.components.flatMap((component) => {
@@ -208,7 +216,44 @@ async function main() {
           returnComponent = formattedBiArray;
         }
 
-        return [formatToId(component.component_id), returnComponent];
+        if (
+          component.component_id === "reliquary_set_effect" &&
+          !!component.data
+        ) {
+          const dataParsed = JSON.parse(component.data);
+
+          returnComponent = dataParsed;
+        }
+
+        if (component.component_id === "drivedisc" && !!component.data) {
+          const dataParsed = JSON.parse(component.data);
+
+          const formattedBiArray = dataParsed?.list
+            ?.reverse()
+            ?.map((item: any, index: number) => {
+              return {
+                index: index + 1,
+                title: cleanFromHTML(item.title),
+                description: item.desc,
+                rolls: cleanFromHTML(item.title)
+                  ?.split(",")
+                  .map((roll) => {
+                    return roll.trim();
+                  }),
+              };
+            });
+
+          returnComponent = {
+            iconUrl: dataParsed?.icon_url,
+            values: formattedBiArray,
+          };
+        }
+
+        attributesComponent.push([
+          formatToId(component.component_id),
+          returnComponent,
+        ]);
+        // return [formatToId(component.component_id), returnComponent];
       });
     });
 
