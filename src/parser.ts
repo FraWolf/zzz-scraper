@@ -249,6 +249,15 @@ async function main() {
           };
         }
 
+        if (component.component_id === "equipment_skill" && !!component.data) {
+          const dataParsed = JSON.parse(component.data);
+
+          returnComponent = {
+            name: dataParsed?.skill_name,
+            description: dataParsed?.skill_desc,
+          };
+        }
+
         attributesComponent.push([
           formatToId(component.component_id),
           returnComponent,
