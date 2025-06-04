@@ -39,6 +39,9 @@ async function main() {
     "talent",
     "textual_research",
 
+    // Agents
+    "agent_talent",
+
     // Drives
     "reliquary_set_effect",
     "drivedisc",
@@ -71,9 +74,11 @@ async function main() {
           const formattedBiArray = dataParsed?.list?.map((item: any) => {
             const id = formatToId(item?.key)?.toLowerCase();
             const itemObject: {
+              id: string;
               key: string;
               value: string | string[] | SameFactionAgent[];
             } = {
+              id,
               key: cleanFromHTML(item.key),
               value: cleanFromHTML(item.value?.[0] || item.value),
             };
