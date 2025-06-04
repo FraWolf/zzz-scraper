@@ -122,7 +122,7 @@ async function main() {
                 }
 
                 return {
-                  // id: cleanFromHTML(formatToId(stat.key)?.toLowerCase()),
+                  id: cleanFromHTML(formatToId(stat.key)?.toLowerCase()),
                   key: cleanFromHTML(stat.key),
                   value: cleanFromHTML(stat.values[1]),
                 };
@@ -134,9 +134,9 @@ async function main() {
             const materials = item.materials.flatMap(
               (materialContainer: any) => {
                 materialContainer = replaceDollarSign(materialContainer);
-                const parsedAgent = JSON.parse(materialContainer);
+                const parsedMaterial = JSON.parse(materialContainer);
 
-                return parsedAgent.map((material: any) => {
+                return parsedMaterial.map((material: any) => {
                   return {
                     id: parseInt(material.ep_id),
                     type: material.menuId?.toLowerCase(),
@@ -200,6 +200,66 @@ async function main() {
               iconUrl: item.icon_url,
               stats: stats || [],
               materials: materials || [],
+            };
+
+            return itemObject;
+          });
+
+          returnComponent = formattedBiArray;
+        }
+
+        if (component.component_id === "agent_talent") {
+          const dataParsed = JSON.parse(component.data);
+
+          const formattedBiArray = dataParsed?.list?.map((item: any) => {
+            const stats = item?.attributes?.map((stat: any, index: number) => {
+              return {
+                key: cleanFromHTML(stat.key),
+                values: stat.values,
+              };
+            });
+
+            const materials = item?.materials?.map((materialContainer: any) => {
+              const materialContainerFormatted = materialContainer?.flatMap(
+                (singleMaterialArray: any) => {
+                  singleMaterialArray = replaceDollarSign(singleMaterialArray);
+                  const parsedMaterial = JSON.parse(singleMaterialArray);
+
+                  return parsedMaterial?.map((material: any) => {
+                    return {
+                      id: parseInt(material.ep_id),
+                      type: material.menuId?.toLowerCase(),
+                      name: material.name,
+                      amount: parseInt(material.amount),
+                      iconUrl: material.icon,
+                    };
+                  });
+                }
+              );
+
+              return materialContainerFormatted || [];
+            });
+
+            // TODO: Enable when multiple talent images
+            const attacks = item?.children?.map((attack: any) => {
+              return {
+                name: attack?.title,
+                description: attack?.desc,
+                imageUrl: attack?.img || null,
+                // iconUrl: attack?.icon_url || null,
+                // talentsImgs: attack?.talent_imgs?.map((talentAttack: any) => {
+                //   return talentAttack?.url;
+                // }),
+              };
+            });
+
+            const itemObject: any = {
+              title: cleanFromHTML(item.title),
+              description: item.desc,
+              iconUrl: item.icon_url,
+              stats: stats || [],
+              materials: materials || [],
+              attacks: attacks || [],
             };
 
             return itemObject;
