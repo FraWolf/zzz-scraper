@@ -240,6 +240,40 @@ async function main() {
               return materialContainerFormatted || [];
             });
 
+            const maxTalentLevel = item?.attributes?.[0]?.values?.length || 0;
+            console.log("maxTalentLevel:", maxTalentLevel);
+
+            const betterStatsParsing = new Array(maxTalentLevel)
+              .fill(null)
+              .map((_, levelIndex) => {
+                const levelStats = item?.attributes?.map((stat: any) => {
+                  return { key: stat.key, value: stat.values[levelIndex] };
+                });
+
+                const levelMaterials = item?.materials?.[levelIndex]?.flatMap(
+                  (material: any) => {
+                    material = replaceDollarSign(material);
+                    const parsedMaterial = JSON.parse(material);
+
+                    return parsedMaterial?.map((material: any) => {
+                      return {
+                        id: parseInt(material.ep_id),
+                        type: material.menuId?.toLowerCase(),
+                        name: material.name,
+                        amount: parseInt(material.amount),
+                        iconUrl: material.icon,
+                      };
+                    });
+                  }
+                );
+
+                return {
+                  level: levelIndex + 1,
+                  stats: levelStats || [],
+                  materials: levelMaterials || [],
+                };
+              });
+
             // TODO: Enable when multiple talent images
             const attacks = item?.children?.map((attack: any) => {
               return {
@@ -257,8 +291,9 @@ async function main() {
               title: cleanFromHTML(item.title),
               description: item.desc,
               iconUrl: item.icon_url,
-              stats: stats || [],
-              materials: materials || [],
+              // stats: stats || [],
+              // materials: materials || [],
+              betterStatsParsing: betterStatsParsing || [],
               attacks: attacks || [],
             };
 
